@@ -79,6 +79,23 @@ db.exec(`
     email     TEXT NOT NULL UNIQUE,
     addedAt   INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)
   );
+
+  -- OTP password-reset codes
+  -- otp_hash   : SHA-256 hex of the 6-digit code (never store plain-text)
+  -- expires_at : Unix ms timestamp; OTP invalid after this
+  -- attempts   : wrong-code submissions so far (blocked after 5)
+  -- req_count  : OTPs sent to this email in the current rate-limit window
+  -- last_req_at: ms timestamp of the most recent send (for rate limiting)
+  CREATE TABLE IF NOT EXISTS otps (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    email       TEXT    NOT NULL,
+    otp_hash    TEXT    NOT NULL,
+    expires_at  INTEGER NOT NULL,
+    attempts    INTEGER NOT NULL DEFAULT 0,
+    req_count   INTEGER NOT NULL DEFAULT 1,
+    last_req_at INTEGER NOT NULL,
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)
+  );
 `);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

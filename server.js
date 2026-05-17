@@ -58,6 +58,7 @@ app.use('/api/reservations',     require('./routes/reservations'));
 app.use('/api/users',            require('./routes/users'));
 app.use('/api/authorized-users', require('./routes/authorizedUsers'));
 app.use('/api/upload',           require('./routes/upload'));
+app.use('/api/auth',             require('./routes/auth'));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((req, res) => {

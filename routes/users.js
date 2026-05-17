@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const { db } = require('../db/database');
+const admin = require('../firebaseAdmin');
+const { sendResetEmail } = require('../emailService');
 
 const router = require('express').Router();
 
@@ -95,6 +97,41 @@ router.delete('/bulk', (req, res) => {
     res.json({ deleted: ids.length });
   } catch (err) {
     console.error('DELETE /api/users/bulk error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/users/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    // 1. Generate the reset link using Firebase Admin
+    if (!admin) {
+       return res.status(500).json({ error: 'Firebase Admin SDK is not properly configured on the server.' });
+    }
+    
+    // Check if the user exists in Firebase Auth before generating the link
+    try {
+      await admin.auth().getUserByEmail(email);
+    } catch (e) {
+      if (e.code === 'auth/user-not-found') {
+        // For security, do not reveal if the user exists or not.
+        // Pretend it succeeded.
+        return res.status(200).json({ message: 'If the email exists, a reset link was sent.' });
+      }
+      throw e;
+    }
+
+    const resetLink = await admin.auth().generatePasswordResetLink(email);
+
+    // 2. Send the email using Nodemailer
+    await sendResetEmail(email, resetLink);
+
+    res.status(200).json({ message: 'If the email exists, a reset link was sent.' });
+  } catch (err) {
+    console.error('POST /api/users/forgot-password error:', err);
     res.status(500).json({ error: err.message });
   }
 });
