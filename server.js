@@ -73,8 +73,10 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 Server is running on port ${PORT}`);
-  console.log(`📦 SQLite database: ./db/restaurant.db`);
-  console.log(`🖼️  Uploads served at: /uploads\n`);
-});
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Server is running locally on port ${PORT}`);
+  });
+}
+
+module.exports = app; // هامة جداً لـ Vercel ليقرأ السيرفر
