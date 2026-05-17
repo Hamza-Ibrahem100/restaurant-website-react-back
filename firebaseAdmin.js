@@ -1,13 +1,20 @@
 const admin = require('firebase-admin');
 const path = require('path');
 
-// Load the service account key from the local JSON file.
-// This avoids all .env newline-escaping issues with private keys.
+let serviceAccount;
+
 try {
-  const serviceAccount = require(path.join(__dirname, 'serviceAccount.json'));
+  // 1. لو السيرفر شغال أونلاين على فيرسيل، هيقرأ من المتغير البيئي
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    // 2. لو شغال محلياً على جهازك، هيقرأ من ملف الـ JSON كالعادة
+    serviceAccount = require(path.join(__dirname, 'serviceAccount.json'));
+  }
 
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://restaurant-food-lover-default-rtdb.firebaseio.com" // رابط الـ Realtime بتاعك
   });
 
   console.log('🔥 Firebase Admin initialized successfully');

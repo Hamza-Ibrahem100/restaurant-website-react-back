@@ -6,3 +6,5 @@ db/*.sqlite
 db/*.db
 uploads/*
 !uploads/.gitkeep
+
+.vercel
