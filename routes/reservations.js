@@ -2,9 +2,10 @@ const { v4: uuidv4 } = require('uuid');
 const { db } = require('../db/database');
 
 const router = require('express').Router();
+const verifyAdmin = require('../middleware/verifyAdmin');
 
-// GET /api/reservations
-router.get('/', (req, res) => {
+// GET /api/reservations - Admin Only
+router.get('/', verifyAdmin, (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 100;
     const rows = db.prepare('SELECT * FROM reservations ORDER BY createdAt DESC LIMIT ?').all(limit);
@@ -39,8 +40,8 @@ router.post('/', (req, res) => {
   }
 });
 
-// PUT /api/reservations/:id/status — update status
-router.put('/:id/status', (req, res) => {
+// PUT /api/reservations/:id/status — update status - Admin Only
+router.put('/:id/status', verifyAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -59,8 +60,8 @@ router.put('/:id/status', (req, res) => {
   }
 });
 
-// PUT /api/reservations/:id — general update
-router.put('/:id', (req, res) => {
+// PUT /api/reservations/:id — general update - Admin Only
+router.put('/:id', verifyAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const existing = db.prepare('SELECT id FROM reservations WHERE id = ?').get(id);
@@ -79,8 +80,8 @@ router.put('/:id', (req, res) => {
   }
 });
 
-// DELETE /api/reservations/:id
-router.delete('/:id', (req, res) => {
+// DELETE /api/reservations/:id - Admin Only
+router.delete('/:id', verifyAdmin, (req, res) => {
   try {
     const result = db.prepare('DELETE FROM reservations WHERE id = ?').run(req.params.id);
     if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
@@ -91,8 +92,8 @@ router.delete('/:id', (req, res) => {
   }
 });
 
-// DELETE /api/reservations/bulk
-router.delete('/bulk', (req, res) => {
+// DELETE /api/reservations/bulk - Admin Only
+router.delete('/bulk', verifyAdmin, (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {

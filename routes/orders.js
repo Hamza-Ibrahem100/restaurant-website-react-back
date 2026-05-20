@@ -2,9 +2,10 @@ const { v4: uuidv4 } = require('uuid');
 const { db, parseOrderRow } = require('../db/database');
 
 const router = require('express').Router();
+const verifyAdmin = require('../middleware/verifyAdmin');
 
-// GET /api/orders — fetch orders (optional ?limit=N)
-router.get('/', (req, res) => {
+// GET /api/orders — fetch orders (optional ?limit=N) - Admin Only
+router.get('/', verifyAdmin, (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 100;
     const rows = db.prepare('SELECT * FROM orders ORDER BY createdAt DESC LIMIT ?').all(limit);
@@ -15,8 +16,8 @@ router.get('/', (req, res) => {
   }
 });
 
-// GET /api/orders/:id — fetch single order
-router.get('/:id', (req, res) => {
+// GET /api/orders/:id — fetch single order - Admin Only
+router.get('/:id', verifyAdmin, (req, res) => {
   try {
     const row = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
     if (!row) return res.status(404).json({ error: 'Order not found' });
@@ -69,8 +70,8 @@ router.post('/', (req, res) => {
   }
 });
 
-// PUT /api/orders/:id/status — update order status
-router.put('/:id/status', (req, res) => {
+// PUT /api/orders/:id/status — update order status - Admin Only
+router.put('/:id/status', verifyAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { status, stripeSessionId, paidAt } = req.body;
@@ -102,8 +103,8 @@ router.put('/:id/status', (req, res) => {
   }
 });
 
-// PUT /api/orders/:id — general update (for dashboard)
-router.put('/:id', (req, res) => {
+// PUT /api/orders/:id — general update (for dashboard) - Admin Only
+router.put('/:id', verifyAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const existing = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
@@ -122,8 +123,8 @@ router.put('/:id', (req, res) => {
   }
 });
 
-// DELETE /api/orders/:id
-router.delete('/:id', (req, res) => {
+// DELETE /api/orders/:id - Admin Only
+router.delete('/:id', verifyAdmin, (req, res) => {
   try {
     const result = db.prepare('DELETE FROM orders WHERE id = ?').run(req.params.id);
     if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
@@ -134,8 +135,8 @@ router.delete('/:id', (req, res) => {
   }
 });
 
-// DELETE /api/orders/bulk
-router.delete('/bulk', (req, res) => {
+// DELETE /api/orders/bulk - Admin Only
+router.delete('/bulk', verifyAdmin, (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {

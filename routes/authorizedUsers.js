@@ -2,9 +2,10 @@ const { v4: uuidv4 } = require('uuid');
 const { db } = require('../db/database');
 
 const router = require('express').Router();
+const verifyAdmin = require('../middleware/verifyAdmin');
 
-// GET /api/authorized-users
-router.get('/', (req, res) => {
+// GET /api/authorized-users - Admin Only
+router.get('/', verifyAdmin, (req, res) => {
   try {
     const rows = db.prepare('SELECT * FROM authorized_users ORDER BY addedAt DESC').all();
     res.json(rows);
@@ -14,8 +15,8 @@ router.get('/', (req, res) => {
   }
 });
 
-// POST /api/authorized-users — add one or multiple emails
-router.post('/', (req, res) => {
+// POST /api/authorized-users — add one or multiple emails - Admin Only
+router.post('/', verifyAdmin, (req, res) => {
   try {
     const { email, emails } = req.body;
 
@@ -54,8 +55,8 @@ router.post('/', (req, res) => {
   }
 });
 
-// DELETE /api/authorized-users/:id
-router.delete('/:id', (req, res) => {
+// DELETE /api/authorized-users/:id - Admin Only
+router.delete('/:id', verifyAdmin, (req, res) => {
   try {
     const result = db.prepare('DELETE FROM authorized_users WHERE id = ?').run(req.params.id);
     if (result.changes === 0) return res.status(404).json({ error: 'Not found' });

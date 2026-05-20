@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { db, parseMenuRow } = require('../db/database');
 
 const router = require('express').Router();
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 // GET /api/menu — fetch all menu items
 router.get('/', (req, res) => {
@@ -14,8 +15,8 @@ router.get('/', (req, res) => {
   }
 });
 
-// POST /api/menu — add a menu item
-router.post('/', (req, res) => {
+// POST /api/menu — add a menu item - Admin Only
+router.post('/', verifyAdmin, (req, res) => {
   try {
     const {
       name, price, category = 'mains', description = '',
@@ -50,8 +51,8 @@ router.post('/', (req, res) => {
   }
 });
 
-// PUT /api/menu/:id — update a menu item
-router.put('/:id', (req, res) => {
+// PUT /api/menu/:id — update a menu item - Admin Only
+router.put('/:id', verifyAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const existing = db.prepare('SELECT * FROM menu WHERE id = ?').get(id);
@@ -97,8 +98,8 @@ router.put('/:id', (req, res) => {
   }
 });
 
-// DELETE /api/menu/bulk — bulk delete (body: { ids: [...] })
-router.delete('/bulk', (req, res) => {
+// DELETE /api/menu/bulk — bulk delete (body: { ids: [...] }) - Admin Only
+router.delete('/bulk', verifyAdmin, (req, res) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -113,8 +114,8 @@ router.delete('/bulk', (req, res) => {
   }
 });
 
-// DELETE /api/menu/:id — delete a single menu item
-router.delete('/:id', (req, res) => {
+// DELETE /api/menu/:id — delete a single menu item - Admin Only
+router.delete('/:id', verifyAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const result = db.prepare('DELETE FROM menu WHERE id = ?').run(id);
