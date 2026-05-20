@@ -12,15 +12,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "better-sqlite3": "^12.10.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "firebase": "^11.5.0",
     "firebase-admin": "^13.10.0",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.7",
     "resend": "^6.12.3",
-    "sharp": "^0.34.5",
     "stripe": "^22.1.1",
     "uuid": "^14.0.0"
   },

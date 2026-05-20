@@ -3,11 +3,9 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// ── App Setup ────────────────────────────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -17,7 +15,6 @@ const ALLOWED_ORIGINS = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. curl, Postman, mobile)
     if (!origin || ALLOWED_ORIGINS.includes(origin)) {
       callback(null, true);
     } else {
@@ -27,56 +24,34 @@ app.use(cors({
   credentials: true
 }));
 
-// ── Stripe Webhook MUST receive raw body — register BEFORE express.json() ────
-const webhookRouter = require('./routes/webhook');
-app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }), webhookRouter);
-
-// ── General Middleware ────────────────────────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ── Serve uploaded images statically ─────────────────────────────────────────
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// ── Health Check ──────────────────────────────────────────────────────────────
+// Health check first
 app.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: '🍽️ Restaurant API is running',
-    version: '1.0.0',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ status: 'ok', message: 'API running', timestamp: Date.now() });
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', db: 'sqlite', timestamp: Date.now() });
+  res.json({ status: 'ok', timestamp: Date.now() });
 });
 
-// ── API Routes ────────────────────────────────────────────────────────────────
-app.use('/api/menu',             require('./routes/menu'));
-app.use('/api/orders',           require('./routes/orders'));
-app.use('/api/reservations',     require('./routes/reservations'));
-app.use('/api/users',            require('./routes/users'));
-app.use('/api/authorized-users', require('./routes/authorizedUsers'));
-app.use('/api/upload',           require('./routes/upload'));
-app.use('/api/auth',             require('./routes/auth'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ── 404 Handler ───────────────────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Only auth route for now - auth uses Firebase RTDB
+app.use('/api/auth', require('./routes/auth'));
+
 app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.path} not found` });
 });
 
-// ── Global Error Handler ──────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  console.error('Error:', err.message);
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
-// ── Start ─────────────────────────────────────────────────────────────────────
 if (process.env.VERCEL !== '1') {
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Server is running locally on port ${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`Server on port ${PORT}`));
 }
 
-module.exports = app; // هامة جداً لـ Vercel ليقرأ السيرفر
+module.exports = app;

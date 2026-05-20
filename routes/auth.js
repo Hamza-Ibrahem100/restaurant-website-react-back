@@ -8,11 +8,35 @@
 const router = require('express').Router();
 const crypto = require('crypto');
 
-// Firebase RTDB for storage (works on Vercel serverless!)
-const { db: rtdb } = require('../firebase');
-const { ref, set, get, update, remove, query, orderByChild, equalTo } = require('firebase/database');
-const admin = require('../firebaseAdmin');
-const { sendOtpEmail, sendResetConfirmationEmail } = require('../emailService');
+let rtdb = null;
+let admin = null;
+let firebaseMethods = { ref: () => {}, set: async () => {}, get: async () => {}, remove: async () => {} };
+let sendOtpEmail = async () => { throw new Error('Email service not available'); };
+let sendResetConfirmationEmail = async () => {};
+
+try {
+  const fb = require('../firebase');
+  rtdb = fb.db;
+  firebaseMethods = require('firebase/database');
+} catch (e) {
+  console.log('Firebase SDK not available:', e.message);
+}
+
+try {
+  admin = require('../firebaseAdmin');
+} catch (e) {
+  console.log('Firebase Admin not available:', e.message);
+}
+
+try {
+  const emailSvc = require('../emailService');
+  sendOtpEmail = emailSvc.sendOtpEmail;
+  sendResetConfirmationEmail = emailSvc.sendResetConfirmationEmail;
+} catch (e) {
+  console.log('Email service not available:', e.message);
+}
+
+const { ref, set, get, remove } = firebaseMethods;
 
 const OTP_TTL_MS = 5 * 60 * 1000;
 const RESET_TOKEN_TTL_MS = 10 * 60 * 1000;

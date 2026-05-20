@@ -7,17 +7,20 @@
 
 const { Resend } = require('resend');
 
+// Initialize Resend with API key from environment
 const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
 
 /**
- * Send OTP email using Resend
- * @param {string} toEmail - Recipient email
+ * Send OTP email using Resend API
+ * @param {string} toEmail - Recipient email address
  * @param {string} otp - 6-digit OTP code
  */
 async function sendOtpEmail(toEmail, otp) {
   try {
+    console.log('📧 Sending OTP email to:', toEmail);
+    
     const data = await resend.emails.send({
-      from: 'Food Lover <onboarding@resend.dev>',  // Use your verified domain in production
+      from: 'Food Lover <onboarding@resend.dev>',
       to: [toEmail],
       subject: 'Your Food Lover Password Reset Code',
       html: `
@@ -47,10 +50,10 @@ async function sendOtpEmail(toEmail, otp) {
       `
     });
     
-    console.log('📧 OTP email sent via Resend:', data);
+    console.log('✅ OTP email sent successfully:', data);
     return data;
   } catch (error) {
-    console.error('📧 Resend error:', error);
+    console.error('❌ Resend API error:', error);
     throw error;
   }
 }
@@ -63,17 +66,18 @@ async function sendResetConfirmationEmail(toEmail) {
     await resend.emails.send({
       from: 'Food Lover <onboarding@resend.dev>',
       to: [toEmail],
-      subject: 'Your password has been reset - Food Lover',
+      subject: 'Password Reset Successfully - Food Lover',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
           <h2 style="color: #d4a574;">Password Reset Successful</h2>
           <p>Your password for Food Lover has been successfully reset.</p>
           <p>If you didn't make this change, please contact support immediately.</p>
         </div>
       `
     });
+    console.log('✅ Confirmation email sent');
   } catch (error) {
-    console.error('Confirmation email error:', error);
+    console.error('❌ Confirmation email error:', error);
   }
 }
 
