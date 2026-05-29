@@ -38,8 +38,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Only auth route for now - auth uses Firebase RTDB
+// Mount all API routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/authorized-users', require('./routes/authorizedUsers'));
+app.use('/api/menu', require('./routes/menu'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/reservations', require('./routes/reservations'));
+app.use('/api/upload', require('./routes/upload'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/webhook', require('./routes/webhook'));
 
 app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.path} not found` });
